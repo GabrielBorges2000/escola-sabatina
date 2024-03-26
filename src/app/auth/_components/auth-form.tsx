@@ -46,6 +46,7 @@ export function AuthForm() {
             width={200}
             height={200}
             quality={100}
+            priority
             alt="Logo da escola sabatina "
           />
           <h1 className="text-3xl font-bold">Login</h1>

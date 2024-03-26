@@ -52,6 +52,7 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
+  password      String? 
   emailVerified DateTime?
   image         String?
   accounts      Account[]
@@ -81,7 +82,7 @@ model ActionUnits {
   requirements Requirements[]
 
   churchId   String
-  church     Church       @relation(fields: [churchId], references: [id])
+  church     Church           @relation(fields: [churchId], references: [id])
   Attendance AttendanceList[]
 }
 
@@ -98,7 +99,7 @@ model Students {
   ActionUnits   ActionUnits @relation(fields: [actionUnitsId], references: [id])
 
   churchId   String
-  Church     Church       @relation(fields: [churchId], references: [id])
+  Church     Church           @relation(fields: [churchId], references: [id])
   Attendance AttendanceList[]
 }
 
@@ -121,7 +122,7 @@ model Requirements {
 model AttendanceList {
   id        String   @id @default(cuid())
   date      DateTime @default(now())
-  isPresent Boolean @default(false)
+  isPresent Boolean  @default(false)
 
   studentId String
   Student   Students @relation(fields: [studentId], references: [id])

@@ -18,7 +18,7 @@ export function MenuLink({ href, name, icon }: MenuLinkProps) {
     <Link
       href={href}
       className={clsx(
-        isActive && 'bg-gray-300',
+        isActive && 'bg-gray-200',
         'flex items-center gap-3 rounded-sm bg-gray-50 px-3 py-6 text-gray-900 transition-all text-md hover:bg-gray-300',
       )}
     >
