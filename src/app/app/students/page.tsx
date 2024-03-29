@@ -5,8 +5,15 @@ import { SelectClass } from '@/components/selects'
 import colors from 'tailwindcss/colors'
 import { Button } from '@/components/ui/button'
 import { ModalAddStudent } from '@/components/modall-add-students'
+import prisma from '@/services/database/prisma'
 
-export default function Students() {
+export default async function Students() {
+  const students = await prisma.students.findMany({
+    include: {
+      ActionUnits: true,
+    },
+  })
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
       <div className="w-full flex justify-between gap-2">
@@ -40,12 +47,13 @@ export default function Students() {
         <SelectClass />
       </form>
       <div className="grid gap-4 mt-4">
-        <CardStudent name="Gabriel Borges" nameWhithClass="Amigos" />
-        <CardStudent name="Gabriel Borges" nameWhithClass="Amigos" />
-        <CardStudent name="Gabriel Borges" nameWhithClass="Amigos" />
-        <CardStudent name="Gabriel Borges" nameWhithClass="Amigos" />
-        <CardStudent name="Gabriel Borges" nameWhithClass="Amigos" />
-        <CardStudent name="Gabriel Borges" nameWhithClass="Amigos" />
+        {students.map((student) => (
+          <CardStudent
+            key={student.id}
+            name={student.name}
+            nameWhithClass={student.ActionUnits.actionName}
+          />
+        ))}
       </div>
     </div>
   )

@@ -1,3 +1,4 @@
+'use client'
 import {
   Card,
   CardHeader,
@@ -16,20 +17,57 @@ import {
 } from '@/components/ui/table'
 
 import { Button } from '@/components/ui/button'
-import { Pencil, Trash } from 'lucide-react'
+import { Trash } from 'lucide-react'
 import { ReactNode } from 'react'
+import { useToast } from '@/components/ui/use-toast'
+
+import { queryClient } from '@/lib/query-client'
+import { useMutation } from '@tanstack/react-query'
 
 export interface TableClassProps {
   nameWhithClass: string
   teacherWhithClass: string
   children: ReactNode
+  idClasses: string
 }
 
 export function TableClass({
   nameWhithClass,
   teacherWhithClass,
   children,
+  idClasses: id,
 }: TableClassProps) {
+  const { toast } = useToast()
+  async function handleDeleteClass(id: string) {
+    try {
+      await fetch('/api/actionUnits', {
+        method: 'DELETE',
+        body: JSON.stringify({
+          id,
+        }),
+      })
+
+      toast({
+        title: 'Sucesso!',
+        description: 'Classe Deletada com sucesso.',
+      })
+    } catch (error) {
+      toast({
+        title: 'Error!',
+        description: 'Ocorreu um erro ao deletar esta classe.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const { mutateAsync: DeleteClass } = useMutation({
+    mutationFn: handleDeleteClass,
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ['actions-units'] })
+    },
+  })
+
   return (
     <Card className="p-4 overflow-x-auto w-full">
       <CardHeader className="border-b">
@@ -39,10 +77,14 @@ export function TableClass({
             <CardDescription>{teacherWhithClass}</CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline">
+            {/* <Button size="sm" variant="outline">
               <Pencil className="w-4 h-4" />
-            </Button>
-            <Button size="sm" variant="destructive">
+            </Button> */}
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => DeleteClass(id)}
+            >
               <Trash className="w-4 h-4" />
             </Button>
           </div>
@@ -87,12 +129,12 @@ export function TableRowStudent({
       <TableCell>{email}</TableCell>
       <TableCell>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline">
+          {/* <Button size="sm" variant="outline">
             <Pencil className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="destructive">
+          </Button> */}
+          {/* <Button size="sm" variant="destructive">
             <Trash className="w-4 h-4" />
-          </Button>
+          </Button> */}
         </div>
       </TableCell>
     </TableRow>

@@ -1,3 +1,5 @@
+'use client'
+
 import {
   Dialog,
   DialogContent,
@@ -13,8 +15,75 @@ import { Button } from '@/components/ui/button'
 import colors from 'tailwindcss/colors'
 import { Input } from '@/components/ui/input'
 import { Plus } from 'lucide-react'
+// import { SelectClass } from './selects'
+import { useToast } from '@/components/ui/use-toast'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { queryClient } from '@/lib/query-client'
+import { useMutation } from '@tanstack/react-query'
+
+const actionUnitsBodySchema = z.object({
+  actionName: z.string(),
+  teacherName: z.string(),
+  assistantTeacherName: z.string(),
+  secretaryName: z.string(),
+})
+
+type actionUnitsBodySchemaProps = z.infer<typeof actionUnitsBodySchema>
 
 export default function ModalAddClass() {
+  const { toast } = useToast()
+  const form = useForm<actionUnitsBodySchemaProps>({
+    values: {
+      actionName: '',
+      teacherName: '',
+      assistantTeacherName: '',
+      secretaryName: '',
+    },
+  })
+
+  const handleCreateClass = form.handleSubmit(async (data) => {
+    const { actionName, teacherName, assistantTeacherName, secretaryName } =
+      actionUnitsBodySchema.parse(data)
+
+    try {
+      const actionUnit = await fetch('/api/actionUnits', {
+        method: 'POST',
+        body: JSON.stringify({
+          actionName,
+          teacherName,
+          assistantTeacherName: assistantTeacherName || '',
+          secretaryName,
+        }),
+      })
+
+      console.log(await actionUnit.json())
+
+      if (!actionUnit) {
+        throw new Error('Não foi possível criar a unidade de ação')
+      }
+
+      toast({
+        title: 'Sucesso!',
+        description: 'Classe Criada com sucesso.',
+      })
+    } catch (error) {
+      toast({
+        title: 'Error!',
+        description: 'Ocorreu um erro ao tentar criar a classe.',
+        variant: 'destructive',
+      })
+    }
+  })
+
+  const { mutateAsync: CreateClass } = useMutation({
+    mutationFn: handleCreateClass,
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ['actions-units'] })
+    },
+  })
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -34,27 +103,32 @@ export default function ModalAddClass() {
             professor e clique em salvar.
           </DialogDescription>
         </DialogHeader>
-        <form className="">
+        <form onSubmit={CreateClass}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="nameWhithClass" className="text-right">
                 Nome da Classe
               </Label>
-              <Input id="nameWhithClass" className="col-span-3" />
+              <Input
+                {...form.register('actionName', { required: true })}
+                className="col-span-3"
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="teacher" className="text-right">
                 Professor
               </Label>
-              <Input id="teacher" type="tel" className="col-span-3" />
+              <Input
+                {...form.register('teacherName', { required: true })}
+                className="col-span-3"
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="assintentTeacher" className="text-right">
                 Professor Auxiliar
               </Label>
               <Input
-                id="assintentTeacher"
-                type="email"
+                {...form.register('assistantTeacherName', { required: true })}
                 className="col-span-3"
               />
             </div>
@@ -62,15 +136,20 @@ export default function ModalAddClass() {
               <Label htmlFor="secretary" className="text-right">
                 Secretária
               </Label>
-              <Input id="secretary" type="email" className="col-span-3" />
+              <Input
+                {...form.register('secretaryName', { required: true })}
+                className="col-span-3"
+              />
             </div>
           </div>
           <DialogFooter className="flex-1 flex justify-end items-end">
             <div className="flex gap-2">
-              <Button type="submit" variant="outline">
-                Cancelar
-              </Button>
-              <Button type="submit">Salvar</Button>
+              <DialogTrigger asChild>
+                <Button variant="outline">Cancelar</Button>
+              </DialogTrigger>
+              <DialogTrigger asChild>
+                <Button type="submit">Salvar</Button>
+              </DialogTrigger>
             </div>
           </DialogFooter>
         </form>

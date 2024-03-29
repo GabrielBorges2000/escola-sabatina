@@ -24,6 +24,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 
+import { queryClient, QueryClientProvider } from '@/lib/query-client'
+
 const MenuLinkData = [
   {
     icon: <Home className="h-6 w-6" color={color.blue[400]} />,
@@ -100,7 +102,9 @@ export default function Component({ children }: PropsWithChildren) {
         </div>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        {children}
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
       </main>
     </div>
   )

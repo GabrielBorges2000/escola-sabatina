@@ -1,8 +1,34 @@
+'use client'
 import { SendToBack } from 'lucide-react'
 import { TableClass, TableRowStudent } from '@/components/table-class'
 import ModalAddClass from '@/components/modal-add-class'
+import { ActionUnits, Students } from '@prisma/client'
+import { api } from '@/lib/api'
+
+import { useQuery } from '@tanstack/react-query'
+interface ActionUnitsProps extends ActionUnits {
+  students: Students[]
+}
 
 export default function ClassOrActionsUnits() {
+  async function getActionUnits(): Promise<ActionUnitsProps[]> {
+    try {
+      const response = await api('/api/actionUnits')
+
+      const { actionsUnits } = await response.json()
+
+      return actionsUnits
+    } catch (error) {
+      console.error('Erro ao buscar cards:', error)
+      return []
+    }
+  }
+
+  const { data: actionsUnits } = useQuery({
+    queryKey: ['actions-units'],
+    queryFn: getActionUnits,
+  })
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
       <div className="w-full flex justify-between gap-2">
@@ -15,87 +41,25 @@ export default function ClassOrActionsUnits() {
         <ModalAddClass />
       </div>
       <div className="grid gap-6">
-        <TableClass nameWhithClass="Amigo" teacherWhithClass="Gabriel Borges">
-          <TableRowStudent
-            id="001"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-          <TableRowStudent
-            id="002"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-          <TableRowStudent
-            id="003"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-          <TableRowStudent
-            id="004"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-        </TableClass>
-        <TableClass nameWhithClass="Visitante" teacherWhithClass="John Joe">
-          <TableRowStudent
-            id="001"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-          <TableRowStudent
-            id="002"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-          <TableRowStudent
-            id="003"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-          <TableRowStudent
-            id="004"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-        </TableClass>
-        <TableClass
-          nameWhithClass="Discipulado"
-          teacherWhithClass="Eder Foster"
-        >
-          <TableRowStudent
-            id="001"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-          <TableRowStudent
-            id="002"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-          <TableRowStudent
-            id="003"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-          <TableRowStudent
-            id="004"
-            name="Gabriel Borges"
-            phone="(11) 98623-7504"
-            email="teste@example.com"
-          />
-        </TableClass>
+        {actionsUnits &&
+          actionsUnits.map(({ actionName, teacherName, id, students }) => (
+            <TableClass
+              nameWhithClass={actionName}
+              teacherWhithClass={teacherName}
+              key={id}
+              idClasses={id}
+            >
+              {students?.map((student, index) => (
+                <TableRowStudent
+                  key={student.id}
+                  id={String(index + 1)}
+                  name={student.name}
+                  phone={student.contact || ''}
+                  email={student.email || ''}
+                />
+              ))}
+            </TableClass>
+          ))}
       </div>
     </div>
   )
