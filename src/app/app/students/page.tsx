@@ -1,3 +1,4 @@
+'use client'
 import { Users, Search, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import CardStudent from '@/components/card-studant'
@@ -7,12 +8,35 @@ import { Button } from '@/components/ui/button'
 import { ModalAddStudent } from '@/components/modall-add-students'
 import prisma from '@/services/database/prisma'
 
-export default async function Students() {
-  const students = await prisma.students.findMany({
-    include: {
-      ActionUnits: true,
-    },
+import { ActionUnits, Students } from '@prisma/client'
+import { api } from '@/lib/api'
+import { useQuery } from '@tanstack/react-query'
+
+export interface StudentsProps extends Students {
+  ActionUnits: ActionUnits
+}
+
+export default function Students() {
+
+  async function getStudents(): Promise<StudentsProps[]> {
+    try {
+      const response = await api('/api/students')
+
+      const { students } = await response.json()
+
+      return students
+    } catch (error) {
+      console.error('Erro ao buscar cards:', error)
+      return []
+    }
+  }
+
+  const { data: students } = useQuery({
+    queryKey: ['students'],
+    queryFn: getStudents,
   })
+
+  console.log(students)
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
@@ -47,7 +71,7 @@ export default async function Students() {
         <SelectClass />
       </form>
       <div className="grid gap-4 mt-4">
-        {students.map((student) => (
+        {students && students.map((student) => (
           <CardStudent
             key={student.id}
             name={student.name}

@@ -1,9 +1,16 @@
 {
   "extends": [
-    "@rocketseat/eslint-config/node"
+    "@rocketseat/eslint-config/node",
+    "@tanstack/query"
   ],
   "rules": {
     "camelcase": "off",
-    "no-useless-constructor": "off"
-  }
+    "no-useless-constructor": "off",
+    "@tanstack/query/exhaustive-deps": "error",
+    "@tanstack/query/no-rest-destructuring": "warn",
+    "@tanstack/query/stable-query-client": "error"
+  },
+  "plugins": [
+    "@tanstack/query"
+  ]
 }

@@ -14,6 +14,21 @@ import { Input } from '@/components/ui/input'
 import { SelectClass } from './selects'
 import { ReactNode } from 'react'
 
+import { useToast } from '@/components/ui/use-toast'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { queryClient } from '@/lib/query-client'
+import { useMutation } from '@tanstack/react-query'
+
+const actionUnitsBodySchema = z.object({
+  actionName: z.string(),
+  teacherName: z.string(),
+  assistantTeacherName: z.string(),
+  secretaryName: z.string(),
+})
+
+type actionUnitsBodySchemaProps = z.infer<typeof actionUnitsBodySchema>
+
 interface ModalAddStudent {
   children: ReactNode
   variant: 'add' | 'edit'
@@ -23,6 +38,61 @@ export function ModalAddStudent({
   children,
   variant = 'add',
 }: ModalAddStudent) {
+
+  const { toast } = useToast()
+  const form = useForm<actionUnitsBodySchemaProps>({
+    values: {
+      actionName: '',
+      teacherName: '',
+      assistantTeacherName: '',
+      secretaryName: '',
+    },
+  })
+
+  const handleCreateClass = form.handleSubmit(async (data) => {
+    const { actionName, teacherName, assistantTeacherName, secretaryName } =
+      actionUnitsBodySchema.parse(data)
+
+    try {
+      const actionUnit = await fetch('/api/actionUnits', {
+        method: 'POST',
+        body: JSON.stringify({
+          actionName,
+          teacherName,
+          assistantTeacherName: assistantTeacherName || '',
+          secretaryName,
+        }),
+      })
+
+      console.log(await actionUnit.json())
+
+      if (!actionUnit) {
+        throw new Error('Não foi possível criar a unidade de ação')
+      }
+
+      toast({
+        title: 'Sucesso!',
+        description: 'Classe Criada com sucesso.',
+      })
+    } catch (error) {
+      toast({
+        title: 'Error!',
+        description: 'Ocorreu um erro ao tentar criar a classe.',
+        variant: 'destructive',
+      })
+    }
+  })
+
+  const { mutateAsync: CreateClass } = useMutation({
+    mutationFn: handleCreateClass,
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ['actions-units'] })
+    },
+  })
+
+
+
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>

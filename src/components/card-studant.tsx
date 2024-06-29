@@ -1,3 +1,4 @@
+import { StudentsProps } from '@/app/app/students/page'
 import { ModalRemoveStudent } from './modal-remove-students'
 import { ModalAddStudent } from './modall-add-students'
 import { Button } from './ui/button'

@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   const hasActionUnit = await prisma.actionUnits.findMany({
     where: {
       actionName,
-      churchId: 'clu7x4bs50000zoxbpbzj02t3',
+      churchId: 'clvfc9g9l0000ay4eyj4itbfn',
     },
   })
 
@@ -42,12 +42,56 @@ export async function POST(req: NextRequest) {
       teacherName,
       assistantTeacherName,
       secretaryName,
-      churchId: 'clu7x4bs50000zoxbpbzj02t3',
+      churchId: 'clvfc9g9l0000ay4eyj4itbfn',
     },
   })
 
   return NextResponse.json({ actionUnit })
 }
+
+export async function PUT(req: NextRequest) {
+
+  const body = await req.json()
+
+  const actionUnitsBodySchema = z.object({
+    id: z.string(),
+    actionName: z.string(),
+    teacherName: z.string(),
+    assistantTeacherName: z.string(),
+    secretaryName: z.string(),
+  })
+
+  const { id, teacherName, assistantTeacherName, actionName, secretaryName } = actionUnitsBodySchema.parse(body)
+
+
+  const unit = await prisma.actionUnits.findMany({
+    where: {
+      id,
+      churchId: 'clvfc9g9l0000ay4eyj4itbfn',
+    },
+  })
+
+  if (unit.length === 0) {
+    return NextResponse.json({ message: 'Action Unit not found' })
+  }
+
+  const actionUnit = await prisma.actionUnits.update({
+    where: {
+      id,
+      churchId: 'clvfc9g9l0000ay4eyj4itbfn',
+    },
+    data: {
+      actionName,
+      teacherName,
+      assistantTeacherName,
+      secretaryName,
+      churchId: 'clvfc9g9l0000ay4eyj4itbfn',
+    },
+  })
+
+  return NextResponse.json({ actionUnit })
+}
+
 export async function DELETE(req: NextRequest) {
   const actionUnitsBodySchema = z.object({
     id: z.string().cuid(),
